@@ -10,9 +10,8 @@ def accessing_sql_db():
             sql_script = script_file.read() 
         cursor.executescript(sql_script)
         connect.commit()
-    except sqlite3.Error as e:
+    except (sqlite3.Error, FileNotFoundError, sqlite3.OperationalError) as e:
         print(f"Database Initialization Error: {e}")
-    except FileNotFoundError:
         cursor.execute("CREATE TABLE IF NOT EXISTS hardware_assets (assetName TEXT, assetType TEXT, assetStatus TEXT, ipAddress TEXT)")
         cursor.execute("CREATE TABLE IF NOT EXISTS software_assets (assetName TEXT, assetType TEXT, assetStatus TEXT)")
         cursor.execute("CREATE TABLE IF NOT EXISTS furniture_assets (assetName TEXT, assetType TEXT, assetStatus TEXT)")

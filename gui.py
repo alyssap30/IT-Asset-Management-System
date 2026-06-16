@@ -88,17 +88,22 @@ class ViewDataBaseGUI:
         self.delete_or_update_inp = ttk.Combobox(self.window, values = ['--Please Select an Option--', "Delete", "Update"], width= 25, state= 'readonly')
         self.delete_or_update_inp.set('--Please Select an Option--')
         self.delete_or_update_inp.pack()
-        tk.Button(self.window, text="Submit", command=self.delete_or_update)
+        tk.Button(self.window, text="Submit", command=self.delete_or_update).pack()
 
     def label_stacking_prevention(self):
         if hasattr(self, 'type_of_asset_error_label'):
             self.type_of_asset_error_label.destroy()
+        if hasattr(self, 'type_of_asset_error_label2'):
+            self.type_of_asset_error_label2.destroy()
         if hasattr(self, 'data_manipulation_error_label'):
             self.data_manipulation_error_label.destroy()
         if hasattr(self, 'filter_error_label'):
             self.filter_error_label.destroy()
+        if hasattr (self, 'expanded_filter_frame'):
+            self.expanded_filter_frame.destroy()
         
     def view_unfiltered_db(self):
+        self.label_stacking_prevention()
         # Checks if the combobox value is it's default value
         if self.type_of_asset_inp.get() == types_of_assets[0]:
             self.type_of_asset_error_label = tk.Label(self.window, text="Please select a type of asset", fg="red")
@@ -107,28 +112,42 @@ class ViewDataBaseGUI:
         else:
             new_window = tk.Toplevel(self.window)
             DatabaseGUI(new_window, self.type_of_asset_inp.get(), "N/A")
-        self.label_stacking_prevention()
 
     def expanded_filter_handing(self):
-        tk.Label(self.window, text = f"Expanded Filter", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack()
-        if self.filter_inp == database_filters[0]:
-            self.filter_error_label = tk.Label(self.window, text = "Please select a filter", fg = 'red')
-            if self.filter_inp.get() == "Date":
-                self.subfilter_inp = ttk.Combobox(self.window, values = ["--Please select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'])
-                self.subfilter_inp.pack()
-    
+        self.label_stacking_prevention()
+        self.expanded_filter_frame = tk.Frame(self.window)
+        self.expanded_filter_frame.pack()
+        tk.Label(self.expanded_filter_frame, text = f"Expanded Filter", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack()
+        tk.Label(self.expanded_filter_frame, text = "Expanded Filter Selection:").pack()
+        
+        if self.filter_inp.get() == database_filters[0]:
+            self.filter_error_label = tk.Label(self.expanded_filter_frame, text = "Please select a filter", fg = 'red')
+            self.filter_error_label.pack()
+        if self.filter_inp.get() == "Date":
+            self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ["--Please select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'], state= 'readonly')
+            self.subfilter_inp.set("--Please select a filter--")
+            self.subfilter_inp.pack()
+        elif self.filter_inp.get() == "Status":
+            self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ["--Please Select A Filter--", "Active", "Under Maintence", "Temporary Deactivated", "Inactive"], state= 'readonly')
+            self.subfilter_inp.set(status_options[0])
+            self.subfilter_inp.pack()
+        elif self.filter_inp.get() == "Type":
+            self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ['--Please Select a Filter--', hardware_asset_names, software_asset_names, furniture_asset_names], state= 'readonly')
+            self.subfilter_inp.pack()
+
     def delete_or_update(self):
-        if hasattr(self, 'type_of_asset_error_label'):
-            self.type_of_asset_error_label.destroy()
-        if hasattr(self, 'data_manipulation_error_label'):
-            self.data_manipulation_error_label.destroy()
+        self.label_stacking_prevention()
         # Checks if the combobox value is it's default value
+        if self.type_of_asset_inp2.get() == types_of_assets[0]:
+            self.type_of_asset_error_label2 = tk.Label(self.window, text="Please select an type of asset", fg="red")
+            self.type_of_asset_error_label2.pack()
         if self.delete_or_update_inp.get() == '--Please Select an Option--':
-            self.data_manipulation_error_label = tk.Label(self.window, text="Please select a type of asset", fg="red")
+            self.data_manipulation_error_label = tk.Label(self.window, text="Please select an option", fg="red")
             self.data_manipulation_error_label.pack()
         # If it isn't the Adding an Asset Window is opened
         else:
             pass
+            # if self.type_of_asset_inp2.get()
 
 # Asset Adding Window Class Declaration
 class AssetAddingGUI:
