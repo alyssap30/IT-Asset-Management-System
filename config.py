@@ -7,3 +7,8 @@ month_options = ["January", "February", "March", "April", "May", "June", "July",
 # Database Variables 
 db_file = "Python Projects /IT Asset System/asset_inventory.db"
 sql_file = "Python Projects /IT Asset System/database_inventory.sql"
+
+# Database Values storage for data manipulation
+hardware_asset_names = []
+software_asset_names = []
+furniture_asset_names = []
