@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 # Import choices and database variables
-from config import types_of_assets, status_options, database_filters, month_options, db_file
+from config import types_of_assets, status_options, database_filters, month_options, db_file, hardware_asset_names, software_asset_names, furniture_asset_names
 
 # Database display Class Declaration
 class DatabaseGUI:
@@ -41,6 +41,12 @@ class DatabaseGUI:
         rows = cursor.fetchall()
         for row in rows:
             self.table.insert('', values=row)
+            if table_name == "hardware_assets":
+                hardware_asset_names.append(row[0])
+            elif table_name == "software_assets":
+                hardware_asset_names.append(row[0])
+            elif table_name == "furniture_assets":
+                hardware_asset_names.append(row[0])
         connect.close()
 
 # Database Window Class Declaration
@@ -84,12 +90,15 @@ class ViewDataBaseGUI:
         self.delete_or_update_inp.pack()
         tk.Button(self.window, text="Submit", command=self.delete_or_update)
 
-    def view_unfiltered_db(self):
-        # If the error Label already exists it is destroyed to prevent label stacking
+    def label_stacking_prevention(self):
         if hasattr(self, 'type_of_asset_error_label'):
             self.type_of_asset_error_label.destroy()
         if hasattr(self, 'data_manipulation_error_label'):
             self.data_manipulation_error_label.destroy()
+        if hasattr(self, 'filter_error_label'):
+            self.filter_error_label.destroy()
+        
+    def view_unfiltered_db(self):
         # Checks if the combobox value is it's default value
         if self.type_of_asset_inp.get() == types_of_assets[0]:
             self.type_of_asset_error_label = tk.Label(self.window, text="Please select a type of asset", fg="red")
@@ -98,12 +107,15 @@ class ViewDataBaseGUI:
         else:
             new_window = tk.Toplevel(self.window)
             DatabaseGUI(new_window, self.type_of_asset_inp.get(), "N/A")
+        self.label_stacking_prevention()
 
     def expanded_filter_handing(self):
         tk.Label(self.window, text = f"Expanded Filter", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack()
-        if self.filter_inp.get() == "Date":
-            self.subfilter_inp = ttk.Combobox(self.window, values = ["--Please select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'])
-            self.subfilter_inp.pack()
+        if self.filter_inp == database_filters[0]:
+            self.filter_error_label = tk.Label(self.window, text = "Please select a filter", fg = 'red')
+            if self.filter_inp.get() == "Date":
+                self.subfilter_inp = ttk.Combobox(self.window, values = ["--Please select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'])
+                self.subfilter_inp.pack()
     
     def delete_or_update(self):
         if hasattr(self, 'type_of_asset_error_label'):
