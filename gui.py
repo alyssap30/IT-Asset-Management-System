@@ -1,29 +1,8 @@
-# Importing Libraries for the Program
 import tkinter as tk
 from tkinter import ttk
-import time as time 
 import sqlite3
-
-# Comboboxes Values
-types_of_assets = ["--Please Select A Type of Asset--", "Hardware", "Software", "Office Furniture"]
-status_options = ["--Please Select A Status--", "Active", "Under Maintence", "Temporary Deactivated", "Inactive"]
-database_filters = ["--Please Select A Filter--", "Date", "Status", "Type"]
-month_options = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-# Database Variables 
-db_file = "Python Projects /IT Asset System/asset_inventory.db"
-sql_file = "Python Projects /IT Asset System/database_inventory.sql"
-connect = sqlite3.connect(db_file)
-cursor = connect.cursor()
-
-# Opens existing Database or creates new one
-def accessing_sql_db():
-    try:
-        with open(sql_file, 'r') as script_file:
-            sql_script = script_file.read() 
-        cursor.executescript(sql_script)
-        connect.commit()
-    except sqlite3.Error as e:
-        print(f"Error: {e}")
+# Import choices and database variables
+from config import types_of_assets, status_options, database_filters, month_options, db_file
 
 # Database display Class Declaration
 class DatabaseGUI:
@@ -35,6 +14,7 @@ class DatabaseGUI:
         self.window.geometry("1000x300")
         self.window.resizable(False, False)
         self.create_widgets()
+        self.data_fetching_from_db()
     
     def create_widgets(self):
         tk.Label(self.window, text = f"Full {self.database_type} Asset Invetory", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
@@ -50,13 +30,14 @@ class DatabaseGUI:
         self.table.pack()
     
     def data_fetching_from_db(self):
+        connect = sqlite3.connect(db_file)
+        cursor = connect.cursor()
         type_of_asset_conversion = {
             "Hardware": "hardware_assets",
             "Software": "software_assets",
             "Office Furniture": "furniture_assets"}
         table_name = type_of_asset_conversion[self.database_type]
         cursor.execute(f"SELECT * FROM {table_name}")
-
         rows = cursor.fetchall()
         for row in rows:
             self.table.insert('', values=row)
@@ -67,7 +48,7 @@ class ViewDataBaseGUI:
     def __init__(self, window):
         self.window = window
         self.window.title("Asset Database Selection")
-        self.window.geometry("400x310")
+        self.window.geometry("400x500")
         self.window.resizable(False, False)
         self.create_widgets()
 
@@ -88,17 +69,27 @@ class ViewDataBaseGUI:
         self.filter_inp = ttk.Combobox(self.window, values=database_filters, state = 'readonly')
         self.filter_inp.set(database_filters[0])
         self.filter_inp.pack()
+        tk.Button(self.window, text = "Submit", command=self.expanded_filter_handing).pack()
 
-        if self.filter_inp == "Date":
-            ttk.Combobox(self.window, values = ["--Please select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'])
-
-        tk.Button(self.window, text = "View Database").pack()
-    
+        # Users Can delete or update a record
+        tk.Label(self.window, text = f"Delete or Update a record", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack()
+        tk.Label(self.window, text = "Database Name").pack()
+        self.type_of_asset_inp2 = ttk.Combobox(self.window, values = types_of_assets, width= 25, state= 'readonly')
+        self.type_of_asset_inp2.set(types_of_assets[0])
+        self.type_of_asset_inp2.pack()
+        # User chooses how the data will be manipulated
+        tk.Label(self.window, text = "Delete or Update a record").pack()
+        self.delete_or_update_inp = ttk.Combobox(self.window, values = ['--Please Select an Option--', "Delete", "Update"], width= 25, state= 'readonly')
+        self.delete_or_update_inp.set('--Please Select an Option--')
+        self.delete_or_update_inp.pack()
+        tk.Button(self.window, text="Submit", command=self.delete_or_update)
 
     def view_unfiltered_db(self):
         # If the error Label already exists it is destroyed to prevent label stacking
         if hasattr(self, 'type_of_asset_error_label'):
             self.type_of_asset_error_label.destroy()
+        if hasattr(self, 'data_manipulation_error_label'):
+            self.data_manipulation_error_label.destroy()
         # Checks if the combobox value is it's default value
         if self.type_of_asset_inp.get() == types_of_assets[0]:
             self.type_of_asset_error_label = tk.Label(self.window, text="Please select a type of asset", fg="red")
@@ -107,7 +98,26 @@ class ViewDataBaseGUI:
         else:
             new_window = tk.Toplevel(self.window)
             DatabaseGUI(new_window, self.type_of_asset_inp.get(), "N/A")
-            
+
+    def expanded_filter_handing(self):
+        tk.Label(self.window, text = f"Expanded Filter", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack()
+        if self.filter_inp.get() == "Date":
+            self.subfilter_inp = ttk.Combobox(self.window, values = ["--Please select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'])
+            self.subfilter_inp.pack()
+    
+    def delete_or_update(self):
+        if hasattr(self, 'type_of_asset_error_label'):
+            self.type_of_asset_error_label.destroy()
+        if hasattr(self, 'data_manipulation_error_label'):
+            self.data_manipulation_error_label.destroy()
+        # Checks if the combobox value is it's default value
+        if self.delete_or_update_inp.get() == '--Please Select an Option--':
+            self.data_manipulation_error_label = tk.Label(self.window, text="Please select a type of asset", fg="red")
+            self.data_manipulation_error_label.pack()
+        # If it isn't the Adding an Asset Window is opened
+        else:
+            pass
+
 # Asset Adding Window Class Declaration
 class AssetAddingGUI:
     def __init__(self, window, asset_type):
@@ -215,12 +225,12 @@ class AssetAddingGUI:
         if asset_type_var.strip() == "": # Presence Check
             self.type_error = tk.Label(self.window, text = "Please Enter Asset Type", fg = "red")
             self.type_error.pack()
-        elif len(asset_name_var) > 50: # Length Check
+        elif len(asset_type_var) > 50: # Length Check
             self.type_error = tk.Label(self.window, text = "Name can't be more that 50 Characters", fg = "red")
             self.type_error.pack()
         else:
             type_valid = True
-            asset_name_var.capitalize() 
+            asset_type_var.capitalize() 
         # Asset IP Address Validation (Hardware Assets Only)
         if self.asset_type == "Hardware":
             if asset_ip_address_var == "": # Presence Check
@@ -245,7 +255,9 @@ class AssetAddingGUI:
             status_valid = True
         # Defining Adding to DB function
         def append_to_db(tablename):
-            if tablename in ["office_furniture", "software_assets"]:
+            connect = sqlite3.connect(db_file)
+            cursor = connect.cursor()
+            if tablename in ["furniture_assets", "software_assets"]:
                 query = f"INSERT INTO {tablename} (assetName, assetType, assetStatus) VALUES (?, ?, ?)"
                 data = (asset_name_var, asset_type_var, asset_status_var)
             else:
@@ -264,50 +276,4 @@ class AssetAddingGUI:
                 append_to_db("software_assets")
             else:
                 append_to_db("furniture_assets")
-            self.window.after(3000, loading_label.destroy) # System waits 5 seconds for data to be added to database
-        
-class MainGUI:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Asset Inventory")
-        self.root.geometry("400x280")
-        self.root.resizable(False, False)
-        self.create_widgets()
-    def create_widgets(self):
-        tk.Label(self.root, text = "IT Asset Management System", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
-        tk.Label(self.root, text = "Add a New Asset", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack(pady = 3)
-        # Adding to Asset Inventory
-        tk.Label(self.root, text = "Type of Asset:", font= ("Arial", 15), justify="center").pack()
-        self.type_of_asset_inp = ttk.Combobox(self.root, values = types_of_assets, width= 25, state= 'readonly')
-        self.type_of_asset_inp.set(types_of_assets[0])
-        self.type_of_asset_inp.pack()
-        tk.Button(self.root, text = "Add an Asset", command=self.asset_adding, padx= 80, pady=2).pack(pady=5)
-        # Viewing Asset Database
-        tk.Label(self.root, text = "View Asset Inventory", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack(pady = 3)
-        tk.Label(self.root, text = "View Database", font= ("Arial", 15), justify="center").pack()
-        tk.Button(self.root, text = "View", command=self.view_asset_database, padx= 100, pady=2).pack(pady=5)
-    # Redirects user to Adding an Asset Window
-    def asset_adding(self):
-        asset_type_var = self.type_of_asset_inp.get()
-        # If the error Label already exists it is destroyed to prevent label stacking
-        if hasattr(self, 'type_of_asset_error_label'):
-            self.type_of_asset_error_label.destroy()
-        # Checks if the combobox value is it's default value
-        if asset_type_var == types_of_assets[0]:
-            self.type_of_asset_error_label = tk.Label(self.root, text="Please select a type of asset", fg="red")
-            self.type_of_asset_error_label.pack()
-        # If it isn't the Adding an Asset Window is opened
-        else:
-            add_asset_window = tk.Toplevel(self.root)
-            AssetAddingGUI(add_asset_window, asset_type_var)
-    # Opens Database Window
-    def view_asset_database(self):
-        view_database_window = tk.Toplevel(self.root)
-        ViewDataBaseGUI(view_database_window)
-        
-# Main global Function to run the GUI
-if __name__ == "__main__":
-    accessing_sql_db()
-    root = tk.Tk()
-    main_window = MainGUI(root)
-    root.mainloop()
+            self.window.after(3000, loading_label.destroy)
