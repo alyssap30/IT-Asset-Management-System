@@ -3,6 +3,7 @@ from tkinter import ttk
 import sqlite3
 # Import choices and database variables
 from config import types_of_assets, status_options, database_filters, month_options, db_file, hardware_asset_names, software_asset_names, furniture_asset_names, type_of_asset_conversion, columns_hardware, columns_software_and_furniture
+from database import query_execution
 
 # Database display Class Declaration
 class DeleteUpdateGUI:
@@ -17,35 +18,45 @@ class DeleteUpdateGUI:
     
     def create_widgets(self):
         tk.Label(self.window, text = f"{self.delete_or_update} A Row from {self.db_name} Table", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
-        tk.Label(self.window, text = f"Please Select a row to {self.delete_or_update.lower()}")
+        tk.Label(self.window, text = f"Please Select a row to {self.delete_or_update.lower()}").pack()
         if self.db_name == "Hardware":
             self.table_row_inp = ttk.Combobox(self.window, values = hardware_asset_names)
         elif self.db_name == "Software":
             self.table_row_inp = ttk.Combobox(self.window, values = software_asset_names)
-        if self.db_name == "Office Furniture":
+        elif self.db_name == "Office Furniture":
             self.table_row_inp = ttk.Combobox(self.window, values = furniture_asset_names)   
         self.table_row_inp.pack()
-        tk.Button(self.window, text = "Submit", command=self.manipulating_data).pack()
+        self.submit_button = tk.Button(self.window, text = "Submit", command=self.manipulating_data)
+        self.submit_button.pack()
     
     def manipulating_data(self):
         self.row_name = self.table_row_inp.get()
         if self.delete_or_update == "Delete":
-            query = f"DELETE FROM {type_of_asset_conversion[self.db_name]} WHERE assetName = '{self.row_name}'"
+            query_execution(f"DELETE FROM {type_of_asset_conversion[self.db_name]} WHERE assetName = '{self.row_name}'")
             tk.Label(self.window, text =f"Deleted row '{self.row_name}'", fg= 'green').pack()
         elif self.delete_or_update == "Update":
+            self.submit_button.destroy()
+            tk.Label(self.window, text = "Choose a column to update:").pack()
             if self.db_name == 'Hardware':
-                self.column_inp = ttk.Combobox(self.window, values= columns_hardware)
+                self.column_inp = ttk.Combobox(self.window, values= columns_hardware, state='readonly')
             elif self.db_name in ['Software', 'Office Furniture']:
-                self.column_inp = ttk.Combobox(self.window, values= columns_hardware)
-                self.column_inp.pack()
-            tk.Label(self.window, text='Input new value below')
-            self.new_value_inp = tk.Entry(self.window).pack()
+                self.column_inp = ttk.Combobox(self.window, values= columns_software_and_furniture, state='readonly')
+            self.column_inp.set(columns_hardware[0])
+            self.column_inp.pack()
+            tk.Label(self.window, text='Input new value below').pack()
+            self.new_value_inp = tk.Entry(self.window)
             self.new_value_inp.pack()
-            tk.Label(self.window, text = f"Update {self.row_name}").pack()
+            tk.Button(self.window, text = f"Update {self.row_name}", command=self.updating_record).pack()
         
-    def updating_field(self):
-        query = f"UPDATE {type_of_asset_conversion[self.db_name]} SET {self.column_inp.get()} = '{self.new_value_inp.get()}' WHERE assetName = '{self.row_name}'"
-        
+    def updating_record(self):
+        if hasattr(self, 'column_error_label'):
+            self.column_error_label.destroy()
+        if self.column_inp.get() == columns_hardware[0]:
+            self.column_error_label = tk.Label(self.window, text = "Please select a column to update", fg = "red") 
+            self.column_error_label.pack()
+            return
+        query_execution(f"UPDATE {type_of_asset_conversion[self.db_name]} SET {self.column_inp.get()} = '{self.new_value_inp.get()}' WHERE assetName = '{self.row_name}'")
+        tk.Label(self.window, text =f"Updateed row '{self.row_name}'", fg= 'green').pack()
 class DatabaseGUI:
     def __init__(self, window, database_type, filter):
         self.window = window
@@ -77,13 +88,16 @@ class DatabaseGUI:
         cursor.execute(f"SELECT * FROM {table_name}")
         rows = cursor.fetchall()
         for row in rows:
-            self.table.insert('', values=row)
+            self.table.insert('', 'end', values=row)
             if table_name == "hardware_assets":
-                hardware_asset_names.append(row[0])
+                if row[0] not in hardware_asset_names:
+                    hardware_asset_names.append(row[0])
             elif table_name == "software_assets":
-                hardware_asset_names.append(row[0])
+                if row[0] not in software_asset_names:
+                    software_asset_names.append(row[0])
             elif table_name == "furniture_assets":
-                hardware_asset_names.append(row[0])
+                if row[0] not in furniture_asset_names:
+                    furniture_asset_names.append(row[0])
         connect.close()
 
 # Database Window Class Declaration
@@ -167,7 +181,7 @@ class ViewDataBaseGUI:
             self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ["--Please Select A Filter--", "Active", "Under Maintence", "Temporary Deactivated", "Inactive"], state= 'readonly')
             self.subfilter_inp.pack()
         elif self.filter_inp.get() == "Type":
-            self.subfilter_in3p = ttk.Combobox(self.expanded_filter_frame, values = ['--Please Select a Filter--', hardware_asset_names, software_asset_names, furniture_asset_names], state= 'readonly')
+            self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ['--Please Select a Filter--', hardware_asset_names, software_asset_names, furniture_asset_names], state= 'readonly')
             self.subfilter_inp.pack()
         self.subfilter_inp.set("--Please select a filter--")
 
@@ -180,8 +194,8 @@ class ViewDataBaseGUI:
         if self.delete_or_update_inp.get() == '--Please Select an Option--':
             self.data_manipulation_error_label = tk.Label(self.window, text="Please select an option", fg="red")
             self.data_manipulation_error_label.pack()
-        # If it isn't the Adding an Asset Window is opened
-        else:
+            # If it isn't the Adding an Asset Window is opened
+        if not self.delete_or_update_inp.get() == '--Please Select an Option--' and self.type_of_asset_inp2.get() != types_of_assets[0]:
             new_window = tk.Toplevel(self.window)
             DeleteUpdateGUI(new_window, self.delete_or_update_inp.get(), self.type_of_asset_inp2.get())
             
@@ -231,11 +245,14 @@ class AssetAddingGUI:
             ttk.Checkbutton(self.window, text = "Add Renewal Date?", variable= self.add_renewal_date, command=self.toggle_date_field).pack()
             self.date_frame = tk.Frame(self.window)
             tk.Label(self.date_frame, text = "Renewal Date").pack()
-            renewal_day_inp = tk.Spinbox(self.date_frame, width= 3, from_=1, to=31, state='readonly')
-            renewal_day_inp.pack(side = tk.LEFT, padx = 5)
+            # Day selection Field
+            self.renewal_day_inp = tk.Spinbox(self.date_frame, width= 3, from_=1, to=31, state='readonly')
+            self.renewal_day_inp.pack(side = tk.LEFT, padx = 5)
+            # Month Selection Field
             tk.Label(self.date_frame, text = "/").pack(side= tk.LEFT, padx=5)
-            renewal_month_inp = ttk.Combobox(self.date_frame, width= 9, values = month_options, state='readonly')
-            renewal_month_inp.pack(side = tk.LEFT, padx = 5)
+            self.renewal_month_inp = ttk.Combobox(self.date_frame, width= 9, values = month_options, state='readonly')
+            self.renewal_month_inp.pack(side = tk.LEFT, padx = 5)
+            # Year Selection Field
             tk.Label(self.date_frame, text = "/").pack(side= tk.LEFT, padx=5)
             renewal_year_inp = tk.Spinbox(self.date_frame, width= 4, from_=2026, to=2100, state='readonly')
             renewal_year_inp.pack(side = tk.LEFT, padx = 5)
@@ -287,7 +304,7 @@ class AssetAddingGUI:
             self.name_error.pack()
         else:
             name_valid = True
-            asset_name_var.capitalize()
+            asset_name_var = asset_name_var.capitalize()
         # Asset Type Validation
         if asset_type_var.strip() == "": # Presence Check
             self.type_error = tk.Label(self.window, text = "Please Enter Asset Type", fg = "red")
@@ -297,7 +314,7 @@ class AssetAddingGUI:
             self.type_error.pack()
         else:
             type_valid = True
-            asset_type_var.capitalize() 
+            asset_type_var = asset_type_var.capitalize() 
         # Asset IP Address Validation (Hardware Assets Only)
         if self.asset_type == "Hardware":
             if asset_ip_address_var == "": # Presence Check

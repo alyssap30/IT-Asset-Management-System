@@ -1,6 +1,6 @@
+# main.py Imports
 import tkinter as tk
 from tkinter import ttk
-
 from database import accessing_sql_db
 from gui import AssetAddingGUI, ViewDataBaseGUI
 from config import types_of_assets
@@ -12,6 +12,7 @@ class MainGUI:
         self.root.geometry("400x280")
         self.root.resizable(False, False)
         self.create_widgets()
+
     def create_widgets(self):
         tk.Label(self.root, text = "IT Asset Management System", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
         tk.Label(self.root, text = "Add a New Asset", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack(pady = 3)
@@ -25,6 +26,7 @@ class MainGUI:
         tk.Label(self.root, text = "View Asset Inventory", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack(pady = 3)
         tk.Label(self.root, text = "View Database", font= ("Arial", 15), justify="center").pack()
         tk.Button(self.root, text = "View", command=self.view_asset_database, padx= 100, pady=2).pack(pady=5)
+
     # Redirects user to Adding an Asset Window
     def asset_adding(self):
         asset_type_var = self.type_of_asset_inp.get()

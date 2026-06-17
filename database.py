@@ -1,4 +1,4 @@
-# database.py
+# database.py imports 
 import sqlite3
 from config import db_file, sql_file  # Import variables from config
 
@@ -18,3 +18,10 @@ def accessing_sql_db():
         connect.commit()
     finally:
         connect.close()
+
+def query_execution(query):
+    connect = sqlite3.connect(db_file)
+    cursor = connect.cursor()
+    cursor.execute(query)
+    connect.commit()
+    connect.close()
