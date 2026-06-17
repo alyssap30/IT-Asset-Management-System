@@ -2,9 +2,50 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 # Import choices and database variables
-from config import types_of_assets, status_options, database_filters, month_options, db_file, hardware_asset_names, software_asset_names, furniture_asset_names
+from config import types_of_assets, status_options, database_filters, month_options, db_file, hardware_asset_names, software_asset_names, furniture_asset_names, type_of_asset_conversion, columns_hardware, columns_software_and_furniture
 
 # Database display Class Declaration
+class DeleteUpdateGUI:
+    def __init__(self, window, delete_or_update, db_name):
+        self.window = window
+        self.delete_or_update = delete_or_update
+        self.db_name = db_name
+        self.window.title("Asset Inventory Database")
+        self.window.geometry("400x300")
+        self.window.resizable(False, False)
+        self.create_widgets()
+    
+    def create_widgets(self):
+        tk.Label(self.window, text = f"{self.delete_or_update} A Row from {self.db_name} Table", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
+        tk.Label(self.window, text = f"Please Select a row to {self.delete_or_update.lower()}")
+        if self.db_name == "Hardware":
+            self.table_row_inp = ttk.Combobox(self.window, values = hardware_asset_names)
+        elif self.db_name == "Software":
+            self.table_row_inp = ttk.Combobox(self.window, values = software_asset_names)
+        if self.db_name == "Office Furniture":
+            self.table_row_inp = ttk.Combobox(self.window, values = furniture_asset_names)   
+        self.table_row_inp.pack()
+        tk.Button(self.window, text = "Submit", command=self.manipulating_data).pack()
+    
+    def manipulating_data(self):
+        self.row_name = self.table_row_inp.get()
+        if self.delete_or_update == "Delete":
+            query = f"DELETE FROM {type_of_asset_conversion[self.db_name]} WHERE assetName = '{self.row_name}'"
+            tk.Label(self.window, text =f"Deleted row '{self.row_name}'", fg= 'green').pack()
+        elif self.delete_or_update == "Update":
+            if self.db_name == 'Hardware':
+                self.column_inp = ttk.Combobox(self.window, values= columns_hardware)
+            elif self.db_name in ['Software', 'Office Furniture']:
+                self.column_inp = ttk.Combobox(self.window, values= columns_hardware)
+                self.column_inp.pack()
+            tk.Label(self.window, text='Input new value below')
+            self.new_value_inp = tk.Entry(self.window).pack()
+            self.new_value_inp.pack()
+            tk.Label(self.window, text = f"Update {self.row_name}").pack()
+        
+    def updating_field(self):
+        query = f"UPDATE {type_of_asset_conversion[self.db_name]} SET {self.column_inp.get()} = '{self.new_value_inp.get()}' WHERE assetName = '{self.row_name}'"
+        
 class DatabaseGUI:
     def __init__(self, window, database_type, filter):
         self.window = window
@@ -17,7 +58,7 @@ class DatabaseGUI:
         self.data_fetching_from_db()
     
     def create_widgets(self):
-        tk.Label(self.window, text = f"Full {self.database_type} Asset Invetory", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
+        tk.Label(self.window, text = f"Full {self.database_type} Asset Inventory", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
         table_columns = ['Name', 'Type', 'Status', 'Renewal Date']
         table_columns.append('IP Address') if self.database_type == 'Hardware' else None
         # Initialising Table + Headings
@@ -32,10 +73,6 @@ class DatabaseGUI:
     def data_fetching_from_db(self):
         connect = sqlite3.connect(db_file)
         cursor = connect.cursor()
-        type_of_asset_conversion = {
-            "Hardware": "hardware_assets",
-            "Software": "software_assets",
-            "Office Furniture": "furniture_assets"}
         table_name = type_of_asset_conversion[self.database_type]
         cursor.execute(f"SELECT * FROM {table_name}")
         rows = cursor.fetchall()
@@ -125,15 +162,14 @@ class ViewDataBaseGUI:
             self.filter_error_label.pack()
         if self.filter_inp.get() == "Date":
             self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ["--Please select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'], state= 'readonly')
-            self.subfilter_inp.set("--Please select a filter--")
             self.subfilter_inp.pack()
         elif self.filter_inp.get() == "Status":
             self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ["--Please Select A Filter--", "Active", "Under Maintence", "Temporary Deactivated", "Inactive"], state= 'readonly')
-            self.subfilter_inp.set(status_options[0])
             self.subfilter_inp.pack()
         elif self.filter_inp.get() == "Type":
-            self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ['--Please Select a Filter--', hardware_asset_names, software_asset_names, furniture_asset_names], state= 'readonly')
+            self.subfilter_in3p = ttk.Combobox(self.expanded_filter_frame, values = ['--Please Select a Filter--', hardware_asset_names, software_asset_names, furniture_asset_names], state= 'readonly')
             self.subfilter_inp.pack()
+        self.subfilter_inp.set("--Please select a filter--")
 
     def delete_or_update(self):
         self.label_stacking_prevention()
@@ -146,9 +182,9 @@ class ViewDataBaseGUI:
             self.data_manipulation_error_label.pack()
         # If it isn't the Adding an Asset Window is opened
         else:
-            pass
-            # if self.type_of_asset_inp2.get()
-
+            new_window = tk.Toplevel(self.window)
+            DeleteUpdateGUI(new_window, self.delete_or_update_inp.get(), self.type_of_asset_inp2.get())
+            
 # Asset Adding Window Class Declaration
 class AssetAddingGUI:
     def __init__(self, window, asset_type):
