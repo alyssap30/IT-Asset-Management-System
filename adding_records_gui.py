@@ -126,7 +126,7 @@ class AssetAddingGUI:
             if asset_ip_address_var == "": # Presence Check
                 self.ip_address_error = tk.Label(self.window, text = "Please Enter Asset IP Address", fg = "red")
                 self.ip_address_error.pack()
-            elif len(asset_ip_address_var) < 12:
+            elif len(asset_ip_address_var) < 11:
                 self.ip_address_error = tk.Label(self.window, text = "IP Address must be 8 digits minumum", fg = "red")
                 self.ip_address_error.pack()
             elif len(asset_ip_address_var) > 16:

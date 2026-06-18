@@ -2,7 +2,8 @@
 import tkinter as tk
 from tkinter import ttk
 from database import accessing_sql_db
-from gui import AssetAddingGUI, ViewDataBaseGUI
+from gui import ViewDataBaseGUI
+from adding_records_gui import AssetAddingGUI
 from config import types_of_assets
 
 class MainGUI:

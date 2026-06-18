@@ -24,39 +24,123 @@ class DeleteUpdateGUI:
         elif self.db_name == "Software":
             self.table_row_inp = ttk.Combobox(self.window, values = software_asset_names)
         elif self.db_name == "Office Furniture":
-            self.table_row_inp = ttk.Combobox(self.window, values = furniture_asset_names)   
+            self.table_row_inp = ttk.Combobox(self.window, values = furniture_asset_names)  
         self.table_row_inp.pack()
-        self.submit_button = tk.Button(self.window, text = "Submit", command=self.manipulating_data)
-        self.submit_button.pack()
-    
-    def manipulating_data(self):
-        self.row_name = self.table_row_inp.get()
-        if self.delete_or_update == "Delete":
-            query_execution(f"DELETE FROM {type_of_asset_conversion[self.db_name]} WHERE assetName = '{self.row_name}'")
-            tk.Label(self.window, text =f"Deleted row '{self.row_name}'", fg= 'green').pack()
-        elif self.delete_or_update == "Update":
-            self.submit_button.destroy()
+        
+        if self.delete_or_update == "Update":
             tk.Label(self.window, text = "Choose a column to update:").pack()
             if self.db_name == 'Hardware':
                 self.column_inp = ttk.Combobox(self.window, values= columns_hardware, state='readonly')
             elif self.db_name in ['Software', 'Office Furniture']:
                 self.column_inp = ttk.Combobox(self.window, values= columns_software_and_furniture, state='readonly')
             self.column_inp.set(columns_hardware[0])
-            self.column_inp.pack()
+            self.column_inp.pack() 
+        self.submit_button = tk.Button(self.window, text = "Submit", command=self.manipulating_data)
+        self.submit_button.pack()
+
+    def prevent_error_stacking(self):
+        if hasattr(self, 'column_error_label'):
+            self.column_error_label.destroy()
+        if hasattr(self, 'new_value_error'):
+            self.new_value_error.destroy()
+        
+    def manipulating_data(self):
+        self.row_name = self.table_row_inp.get()
+        # Deletes selected row from SQL Database
+        if self.delete_or_update == "Delete":
+            query_execution(f"DELETE FROM {type_of_asset_conversion[self.db_name]} WHERE assetName = '{self.row_name}'")
+            # Removes select row from asset name lists
+            if self.db_name == 'Hardware':
+                hardware_asset_names.remove(self.row_name)
+            elif self.db_name == 'Software':
+                software_asset_names.remove(self.row_name)
+            elif self.db_name == 'Office Furniture':
+                furniture_asset_names.remove(self.row_name)
+            # Comfirm Deletion was successful to users 
+            tk.Label(self.window, text =f"Deleted row '{self.row_name}' Successfully", fg= 'green').pack()
+        
+        # Updating a Row Commands
+        elif self.delete_or_update == "Update":
+            self.submit_button.destroy()
+            # Ensures default value isn't selected 
+            if self.column_inp == columns_hardware[0]:
+                self.column_error_label = tk.Label(self.window, text = 'Please select a column name', fg = 'red')
+                self.column_error_label.pack()
             tk.Label(self.window, text='Input new value below').pack()
-            self.new_value_inp = tk.Entry(self.window)
-            self.new_value_inp.pack()
+            # Displays IP address fields for new value input
+            if self.column_inp == 'ipAddress':
+                self.ip_address_inp1 = tk.Entry(self.ip_frame, width= 3)
+                self.ip_address_inp1.pack(side=tk.LEFT, padx = 5)
+                tk.Label(self.ip_frame, text = '.').pack(side= tk.LEFT, padx = 5)
+                self.ip_address_inp2 = tk.Entry(self.ip_frame, width= 3)
+                self.ip_address_inp2.pack(side=tk.LEFT, padx = 5)
+                tk.Label(self.ip_frame, text = '.').pack(side= tk.LEFT, padx = 5)
+                self.ip_address_inp3 = tk.Entry(self.ip_frame, width= 3)
+                self.ip_address_inp3.pack(side=tk.LEFT, padx = 5)
+                tk.Label(self.ip_frame, text = '.').pack(side= tk.LEFT, padx = 5)
+                self.ip_address_inp4 = tk.Entry(self.ip_frame, width= 3)
+                self.ip_address_inp4.pack(side=tk.LEFT, padx = 5)
+             # Displays status field for new value input
+            elif self.column_inp == 'asset_status':
+                self.status_input = ttk.Combobox(self.window, values = status_options, state = "readonly")
+                self.status_input.set(status_options[0])
+                self.status_input.pack()
+             # Displays Renewal date fields for new value input
+            elif self.column_inp == 'assetRenewalDate':
+                # Day selection Field
+                self.renewal_day_inp = tk.Spinbox(self.date_frame, width= 3, from_=1, to=31, state='readonly')
+                self.renewal_day_inp.pack(side = tk.LEFT, padx = 5)
+                # Month Selection Field
+                tk.Label(self.date_frame, text = "/").pack(side= tk.LEFT, padx=5)
+                self.renewal_month_inp = ttk.Combobox(self.date_frame, width= 9, values = month_options, state='readonly')
+                self.renewal_month_inp.pack(side = tk.LEFT, padx = 5)
+                # Year Selection Field
+                tk.Label(self.date_frame, text = "/").pack(side= tk.LEFT, padx=5)
+                renewal_year_inp = tk.Spinbox(self.date_frame, width= 4, from_=2026, to=2100, state='readonly')
+                renewal_year_inp.pack(side = tk.LEFT, padx = 5)
             tk.Button(self.window, text = f"Update {self.row_name}", command=self.updating_record).pack()
         
     def updating_record(self):
-        if hasattr(self, 'column_error_label'):
-            self.column_error_label.destroy()
+        self.prevent_error_stacking()
+        # Combines the inputted values for IP address into a formatted string
+        asset_ip_address_var1 = self.ip_address_inp1.get().strip() if self.db_name == "Hardware" else "N/A"
+        asset_ip_address_var2 = self.ip_address_inp2.get().strip() if self.db_name == "Hardware" else "N/A"
+        asset_ip_address_var3 = self.ip_address_inp3.get().strip() if self.db_name == "Hardware" else "N/A"
+        asset_ip_address_var4 = self.ip_address_inp4.get().strip() if self.db_name == "Hardware" else "N/A"
+        asset_ip_address_var = f'{asset_ip_address_var1}.{asset_ip_address_var2}.{asset_ip_address_var3}.{asset_ip_address_var4}'
+
+        # Asset IP Address Validation (Hardware Assets Only)
+        if self.column_inp == "ipAddress":
+            if asset_ip_address_var == "": # Presence Check
+                self.new_value_error = tk.Label(self.window, text = "Please Enter Asset IP Address", fg = "red")
+                self.new_value_error.pack()
+            elif len(asset_ip_address_var) < 11: # Length Check
+                self.new_value_error = tk.Label(self.window, text = "IP Address must be 8 digits minumum", fg = "red")
+                self.new_value_error.pack()
+            elif len(asset_ip_address_var) > 16: # Length Check
+                self.new_value_error = tk.Label(self.window, text = "IP Address must be 12 digits maximum", fg = "red")
+                self.new_value_error.pack()
+            elif not asset_ip_address_var1.isdigit() or not asset_ip_address_var2.isdigit() or not asset_ip_address_var3.isdigit() or not asset_ip_address_var4.isdigit():
+                self.new_value_error =  tk.Label(self.window, text = "IP Address can only be digits", fg = "red")
+                self.new_value_error.pack()
+            else:
+                self.new_value == asset_ip_address_var
+        # Asset Status Validation
+        elif self.column_inp == "assetStatus":
+            if self.status_input.get() == status_options[0]: # Ensures default value can't be submitted
+                self.new_value_error = tk.Label(self.window, text = "Please Select Asset Status", fg = "red")
+                self.new_value_error.pack()
+        # Asset Renewal Date Validation
+        elif self.column_inp == "assetRenewalDate":
+            pass
+
         if self.column_inp.get() == columns_hardware[0]:
             self.column_error_label = tk.Label(self.window, text = "Please select a column to update", fg = "red") 
             self.column_error_label.pack()
             return
-        query_execution(f"UPDATE {type_of_asset_conversion[self.db_name]} SET {self.column_inp.get()} = '{self.new_value_inp.get()}' WHERE assetName = '{self.row_name}'")
-        tk.Label(self.window, text =f"Updateed row '{self.row_name}'", fg= 'green').pack()
+        query_execution(f"UPDATE {type_of_asset_conversion[self.db_name]} SET {self.column_inp.get()} = '{self.new_value}' WHERE assetName = '{self.row_name}'")
+        tk.Label(self.window, text =f"Updated row '{self.row_name}'", fg= 'green').pack()
+    
 class DatabaseGUI:
     def __init__(self, window, database_type, filter):
         self.window = window

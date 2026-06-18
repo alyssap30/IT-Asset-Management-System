@@ -21,9 +21,9 @@ CREATE TABLE IF NOT EXISTS furniture_assets (
 );
 
 INSERT OR IGNORE INTO hardware_assets (assetName, assetType, ipAddress, assetStatus, assetRenewalDate)
-VALUES ('Server0', 'Server', '198.162.110.01', 'Active', '2028-04-13');
+VALUES ('Server0', 'Server', '198.162.110.01', 'Active', '10/04/2028');
 
 INSERT OR IGNORE INTO software_assets (assetName, assetType, assetStatus, assetRenewalDate)
-VALUES ('VS Code', 'Coding IDE', 'Active', '2034-09-02');
+VALUES ('VS Code', 'IDE', 'Active', '02/10/2034');
 
 
