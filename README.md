@@ -17,11 +17,11 @@ Features
 
 Screenshots
 
-Software overview with the options to add assets to each database, view a filtered or unfiltered version of each table of the database and update and delete commands for existing records in the database
+Software overview with the options to add assets to each database, view a filtered or unfiltered version of each table of the database and update and delete commands for existing records in the database:
 
 <img width="406" height="486" alt="Screenshot 2026-06-18 at 13 57 57" src="https://github.com/user-attachments/assets/ebd4e450-fd8c-41b3-b525-18992882faf1" />
 
-
+Allows you to add a record to the selected table. Validation is implemented to ensure no fields are empty with string methods to check length. Below is the input fields for the hardware asset database:
 
 <img width="392" height="499" alt="Screenshot 2026-06-18 at 13 58 32" src="https://github.com/user-attachments/assets/586e30ba-d719-4ed9-aca5-a378fd3f0908" />
 
