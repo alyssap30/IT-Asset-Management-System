@@ -189,7 +189,7 @@ class ViewDataBaseGUI:
     def __init__(self, window):
         self.window = window
         self.window.title("Asset Database Selection")
-        self.window.geometry("400x500")
+        self.window.geometry("400x350")
         self.window.resizable(False, False)
         self.create_widgets()
 
@@ -212,31 +212,14 @@ class ViewDataBaseGUI:
         self.filter_inp.pack()
         tk.Button(self.window, text = "Submit", command=self.expanded_filter_handing).pack()
 
-        # Users Can delete or update a record
-        tk.Label(self.window, text = f"Delete or Update a record", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack()
-        tk.Label(self.window, text = "Database Name").pack()
-        self.type_of_asset_inp2 = ttk.Combobox(self.window, values = types_of_assets, width= 25, state= 'readonly')
-        self.type_of_asset_inp2.set(types_of_assets[0])
-        self.type_of_asset_inp2.pack()
-        # User chooses how the data will be manipulated
-        tk.Label(self.window, text = "Delete or Update a record").pack()
-        self.delete_or_update_inp = ttk.Combobox(self.window, values = ['--Please Select an Option--', "Delete", "Update"], width= 25, state= 'readonly')
-        self.delete_or_update_inp.set('--Please Select an Option--')
-        self.delete_or_update_inp.pack()
-        tk.Button(self.window, text="Submit", command=self.delete_or_update).pack()
-
     def label_stacking_prevention(self):
         if hasattr(self, 'type_of_asset_error_label'):
             self.type_of_asset_error_label.destroy()
-        if hasattr(self, 'type_of_asset_error_label2'):
-            self.type_of_asset_error_label2.destroy()
-        if hasattr(self, 'data_manipulation_error_label'):
-            self.data_manipulation_error_label.destroy()
         if hasattr(self, 'filter_error_label'):
             self.filter_error_label.destroy()
         if hasattr (self, 'expanded_filter_frame'):
             self.expanded_filter_frame.destroy()
-        
+         
     def view_unfiltered_db(self):
         self.label_stacking_prevention()
         # Checks if the combobox value is it's default value
@@ -268,17 +251,3 @@ class ViewDataBaseGUI:
             self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ['--Please Select a Filter--', hardware_asset_names, software_asset_names, furniture_asset_names], state= 'readonly')
             self.subfilter_inp.pack()
         self.subfilter_inp.set("--Please select a filter--")
-
-    def delete_or_update(self):
-        self.label_stacking_prevention()
-        # Checks if the combobox value is it's default value
-        if self.type_of_asset_inp2.get() == types_of_assets[0]:
-            self.type_of_asset_error_label2 = tk.Label(self.window, text="Please select an type of asset", fg="red")
-            self.type_of_asset_error_label2.pack()
-        if self.delete_or_update_inp.get() == '--Please Select an Option--':
-            self.data_manipulation_error_label = tk.Label(self.window, text="Please select an option", fg="red")
-            self.data_manipulation_error_label.pack()
-            # If it isn't the Adding an Asset Window is opened
-        if not self.delete_or_update_inp.get() == '--Please Select an Option--' and self.type_of_asset_inp2.get() != types_of_assets[0]:
-            new_window = tk.Toplevel(self.window)
-            DeleteUpdateGUI(new_window, self.delete_or_update_inp.get(), self.type_of_asset_inp2.get())         
