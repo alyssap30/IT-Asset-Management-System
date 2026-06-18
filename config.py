@@ -16,8 +16,8 @@ sql_file = os.path.join(script_dir, "database_inventory.sql")
 type_of_asset_conversion = {"Hardware": "hardware_assets", "Software": "software_assets", "Office Furniture": "furniture_assets"}
 
 # Database Values storage for data manipulation
-hardware_asset_names = []
-software_asset_names = []
-furniture_asset_names = []
+hardware_asset_names = ['--Please Select a Row Name--', 'Server0']
+software_asset_names = ['--Please Select a Row Name--', 'VS Code']
+furniture_asset_names = ['--Please Select a Row Name--']
 
 

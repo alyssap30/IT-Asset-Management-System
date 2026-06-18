@@ -60,8 +60,8 @@ class AssetAddingGUI:
             self.renewal_month_inp.pack(side = tk.LEFT, padx = 5)
             # Year Selection Field
             tk.Label(self.date_frame, text = "/").pack(side= tk.LEFT, padx=5)
-            renewal_year_inp = tk.Spinbox(self.date_frame, width= 4, from_=2026, to=2100, state='readonly')
-            renewal_year_inp.pack(side = tk.LEFT, padx = 5)
+            self.renewal_year_inp = tk.Spinbox(self.date_frame, width= 4, from_=2026, to=2100, state='readonly')
+            self.renewal_year_inp.pack(side = tk.LEFT, padx = 5)
             # Status Input Field
             ttk.Separator(self.window, orient="horizontal").pack(fill='x', pady=10)
             tk.Label(self.window, text = "Status").pack()
@@ -84,13 +84,16 @@ class AssetAddingGUI:
         asset_name_var = self.asset_name_inp.get()
         asset_type_var = self.asset_type_inp.get()
         asset_status_var = self.status_input.get()
+        name_valid = type_valid = status_valid = False
+        # Combines the inputted values for IP address into a formatted string
         asset_ip_address_var1 = self.ip_address_inp1.get().strip() if self.asset_type == "Hardware" else "N/A"
         asset_ip_address_var2 = self.ip_address_inp2.get().strip() if self.asset_type == "Hardware" else "N/A"
         asset_ip_address_var3 = self.ip_address_inp3.get().strip() if self.asset_type == "Hardware" else "N/A"
         asset_ip_address_var4 = self.ip_address_inp4.get().strip() if self.asset_type == "Hardware" else "N/A"
         asset_ip_address_var = f'{asset_ip_address_var1}.{asset_ip_address_var2}.{asset_ip_address_var3}.{asset_ip_address_var4}'
-        name_valid = type_valid = status_valid = False
         ip_address_valid = True if self.asset_type != "Hardware" else False
+        # Combines the inputted values for Renewal Date into a formatted string
+        self.asset_renewal_date = f"{self.renewal_day_inp.get()}/{self.renewal_month_inp.get()}/{self.renewal_year_inp.get()}"
         
         if hasattr(self, 'name_error'):
             self.name_error.destroy()
@@ -110,7 +113,6 @@ class AssetAddingGUI:
             self.name_error.pack()
         else:
             name_valid = True
-            asset_name_var = asset_name_var.capitalize()
         # Asset Type Validation
         if asset_type_var.strip() == "": # Presence Check
             self.type_error = tk.Label(self.window, text = "Please Enter Asset Type", fg = "red")
@@ -119,8 +121,7 @@ class AssetAddingGUI:
             self.type_error = tk.Label(self.window, text = "Name can't be more that 50 Characters", fg = "red")
             self.type_error.pack()
         else:
-            type_valid = True
-            asset_type_var = asset_type_var.capitalize() 
+            type_valid = True 
         # Asset IP Address Validation (Hardware Assets Only)
         if self.asset_type == "Hardware":
             if asset_ip_address_var == "": # Presence Check
@@ -143,15 +144,28 @@ class AssetAddingGUI:
             self.status_error.pack()
         else:
             status_valid = True
+        # Asset Renewal Date Validation
+        self.renewal_date_error = tk.Label(self.window, text = "Error: Invalid Date")
+        if self.renewal_month_inp == "February":
+            if self.renewal_year_inp % 4 != 0:
+                if self.renewal_day_inp <= '29':
+                    self.renewal_date_error.pack()
+            else:
+                if self.renewal_day_inp <= '30':
+                    self.renewal_date_error.pack()
+        elif self.renewal_month_inp in ['April', 'June', 'September', 'November']:
+            if self.renewal_day_inp == '31':
+                    self.renewal_date_error.pack()
+        
         # Defining Adding to DB function
         def append_to_db(tablename):
             connect = sqlite3.connect(db_file)
             cursor = connect.cursor()
             if tablename in ["furniture_assets", "software_assets"]:
-                query = f"INSERT INTO {tablename} (assetName, assetType, assetStatus) VALUES (?, ?, ?)"
+                query = f"INSERT INTO {tablename} (assetName, assetType, assetStatus, assetRenewalDate) VALUES (?, ?, ?)"
                 data = (asset_name_var, asset_type_var, asset_status_var)
             else:
-                query = f"INSERT INTO {tablename} (assetName, assetType, ipAddress, assetStatus) VALUES (?, ?, ?, ?)"
+                query = f"INSERT INTO {tablename} (assetName, assetType, ipAddress, assetStatus, assetRenewalDate) VALUES (?, ?, ?, ?)"
                 data = (asset_name_var, asset_type_var, asset_ip_address_var, asset_status_var)
             cursor.execute(query, data)
             connect.commit()
