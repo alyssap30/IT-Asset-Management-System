@@ -170,15 +170,19 @@ class DeleteUpdateGUI:
         tk.Label(self.window, text =f"Updated row '{self.row_name}'", fg= 'green').pack()
     
 class DatabaseGUI:
-    def __init__(self, window, database_type, filter):
+    def __init__(self, window, database_type, filter_field, expanded_filter):
         self.window = window
         self.database_type = database_type
-        self.filter = filter
+        self.filter_field = filter_field
+        self.expanded_filter = expanded_filter
         self.window.title("Asset Inventory Database")
         self.window.geometry("1000x300")
         self.window.resizable(False, False)
         self.create_widgets()
-        self.data_fetching_from_db()
+        if filter_field == "N/A":
+            self.data_fetching_from_db()
+        else:
+            self.data_fetching_from_filtered_db()
     
     def create_widgets(self):
         tk.Label(self.window, text = f"Full {self.database_type} Asset Inventory", bg = "#5285A1", fg = "white", width= 100, font = ("Arial", 20)).pack(pady= 3)
@@ -210,6 +214,16 @@ class DatabaseGUI:
             elif table_name == "furniture_assets":
                 if row[0] not in furniture_asset_names:
                     furniture_asset_names.append(row[0])
+        connect.close()
+    
+    def data_fetching_from_filtered_db(self):
+        connect = sqlite3.connect(db_file)
+        cursor = connect.cursor()
+        table_name = type_of_asset_conversion[self.database_type]
+        cursor.execute(f"SELECT * FROM {table_name} WHERE {self.filter_field} = '{self.expanded_filter}")
+        rows = cursor.fetchall()
+        for row in rows:
+            self.table.insert('', 'end', values=row)
         connect.close()
 
 # Database Window Class Declaration
@@ -257,7 +271,20 @@ class ViewDataBaseGUI:
         # If it isn't the Adding an Asset Window is opened
         else:
             new_window = tk.Toplevel(self.window)
-            DatabaseGUI(new_window, self.type_of_asset_inp.get(), "N/A")
+            DatabaseGUI(new_window, self.type_of_asset_inp.get(), "N/A", "N/A")
+
+    def view_filtered_db(self):
+        self.label_stacking_prevention()
+        if self.filter_inp.get() == database_filters[0]:
+            self.filter_error_label = tk.Label(self.expanded_filter_frame, text = "Please select a filter", fg = 'red')
+            self.filter_error_label.pack()
+            return
+        if self.subfilter_inp.get() == database_filters[0]:
+            self.subfilter_error_label = tk.Label(self.expanded_filter_frame, text = "Please select an expanded filter", fg = 'red')
+            self.subfilter_error_label.pack()
+            return
+        new_window = tk.Toplevel(self.window)
+        DatabaseGUI(new_window, self.type_of_asset_inp.get(), self.filter_inp.get(), self.subfilter_inp.get())
 
     def expanded_filter_handing(self):
         self.label_stacking_prevention()
@@ -269,13 +296,12 @@ class ViewDataBaseGUI:
         if self.filter_inp.get() == database_filters[0]:
             self.filter_error_label = tk.Label(self.expanded_filter_frame, text = "Please select a filter", fg = 'red')
             self.filter_error_label.pack()
-        if self.filter_inp.get() == "Date":
-            self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ["--Please Select a filter--", 'Calculate days until renewal', 'Renewal in next 3 months', 'Renewal in next year', 'Renewal in new 5 years'], state= 'readonly')
-            self.subfilter_inp.pack()
-        elif self.filter_inp.get() == "Status":
+        if self.filter_inp.get() == "Status":
             self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ["--Please Select A Filter--", "Active", "Under Maintence", "Temporary Deactivated", "Inactive"], state= 'readonly')
             self.subfilter_inp.pack()
         elif self.filter_inp.get() == "Type":
             self.subfilter_inp = ttk.Combobox(self.expanded_filter_frame, values = ['--Please Select a Filter--', hardware_asset_names, software_asset_names, furniture_asset_names], state= 'readonly')
             self.subfilter_inp.pack()
         self.subfilter_inp.set("--Please select a filter--")
+
+        tk.Button(self.window, text="View Database", command = self.view_filtered_db)

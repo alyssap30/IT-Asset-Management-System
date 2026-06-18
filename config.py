@@ -4,7 +4,7 @@ import os
 # Comboboxes Values
 types_of_assets = ["--Please Select A Type of Asset--", "Hardware", "Software", "Office Furniture"]
 status_options = ["--Please Select A Status--", "Active", "Under Maintence", "Temporary Deactivated", "Inactive"]
-database_filters = ["--Please Select A Filter--", "Date", "Status", "Type"]
+database_filters = ["--Please Select A Filter--", "Status", "Type"]
 month_options = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 columns_hardware = ['--Please select a column name--', 'ipAddress', 'assetStatus', 'assetRenewalDate']
 columns_software_and_furniture = ['--Please select a column name--', 'assetStatus', 'assetRenewalDate']

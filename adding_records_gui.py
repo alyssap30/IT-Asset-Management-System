@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 # Import choices and database variables
-from config import types_of_assets, status_options, month_options
+from config import types_of_assets, status_options, month_options, hardware_asset_names, software_asset_names, furniture_asset_names
 from database import db_file
 
 # Asset Adding Window Class Declaration
@@ -172,12 +172,15 @@ class AssetAddingGUI:
             connect.close()
         # Checks if all values return true 
         if all ([name_valid, type_valid, ip_address_valid, status_valid]):
-            loading_label = tk.Label(self.window, text = "Adding to Database..", fg = "green")
+            loading_label = tk.Label(self.window, text = f"Added {self.asset_name_inp.get()} to Database", fg = "green")
             loading_label.pack()
             if self.asset_type == "Hardware":
                 append_to_db("hardware_assets")
+                hardware_asset_names.append(self.asset_name_inp.get())
             elif self.asset_type == "Software":
                 append_to_db("software_assets")
+                software_asset_names.append(self.asset_name_inp.get())
             else:
                 append_to_db("furniture_assets")
-            self.window.after(3000, loading_label.destroy)
+                furniture_asset_names.append(self.asset_name_inp.get())
+        
