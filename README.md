@@ -15,6 +15,7 @@ Features
 - Error handling using try/except
 - String methods 
 
+
 Screenshots
 
 Software overview with the options to add assets to each database, view a filtered or unfiltered version of each table of the database and update and delete commands for existing records in the database:
@@ -25,9 +26,10 @@ Allows you to add a record to the selected table. Validation is implemented to e
 
 <img width="392" height="499" alt="Screenshot 2026-06-18 at 13 58 32" src="https://github.com/user-attachments/assets/586e30ba-d719-4ed9-aca5-a378fd3f0908" />
 
+The selection on viewing the full table or a filtered version by either assetType or assetStatus
+
 <img width="395" height="328" alt="Screenshot 2026-06-18 at 13 59 39" src="https://github.com/user-attachments/assets/99af68a8-1307-4d4e-bcbe-62f4d174c67a" />
 
+Database view for hardware assets using the SELECT command to fetch records from the SQL tables  
+
 <img width="997" height="324" alt="Screenshot 2026-06-18 at 13 59 12" src="https://github.com/user-attachments/assets/1064c881-76b5-4354-831c-69cb6ea1fbf2" />
-
-
-
