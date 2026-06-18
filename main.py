@@ -60,17 +60,17 @@ class MainGUI:
             self.data_manipulation_error_label.pack()
             # If it isn't the Adding an Asset Window is opened
         if not self.delete_or_update_inp.get() == '--Please Select an Option--' and self.type_of_asset_inp2.get() != types_of_assets[0]:
-            if self.type_of_asset_inp2 == 'Hardware':
+            if self.type_of_asset_inp2.get() == 'Hardware':
                 if len(hardware_asset_names) == 1:
                     self.type_of_asset_error_label2 = tk.Label(self.root, text= 'Error: Database is empty')
                     self.type_of_asset_error_label2.pack()
                     return
-            elif self.type_of_asset_inp2 == 'Software':
+            elif self.type_of_asset_inp2.get() == 'Software':
                 if len(software_asset_names) == 1:
                     self.type_of_asset_error_label2 = tk.Label(self.root, text= 'Error: Database is empty')
                     self.type_of_asset_error_label2.pack()
                     return 
-            elif self.type_of_asset_inp2 == 'Hardware':
+            elif self.type_of_asset_inp2.get() == 'Office Furniture':
                 if len(furniture_asset_names) == 1:
                     self.type_of_asset_error_label2 = tk.Label(self.root, text= 'Error: Database is empty')
                     self.type_of_asset_error_label2.pack()

@@ -126,7 +126,7 @@ class DeleteUpdateGUI:
         asset_ip_address_var = f'{asset_ip_address_var1}.{asset_ip_address_var2}.{asset_ip_address_var3}.{asset_ip_address_var4}'
         asset_renewal_date = f"{self.renewal_day_inp.get()}/{self.renewal_month_inp.get()}/{self.renewal_year_inp.get()}"
         # Asset IP Address Validation (Hardware Assets Only)
-        if self.column_inp == "ipAddress":
+        if self.column_inp.get() == "ipAddress":
             if asset_ip_address_var == "": # Presence Check
                 self.new_value_error = tk.Label(self.window, text = "Please Enter Asset IP Address", fg = "red")
                 self.new_value_error.pack()
@@ -140,25 +140,25 @@ class DeleteUpdateGUI:
                 self.new_value_error =  tk.Label(self.window, text = "IP Address can only be digits", fg = "red")
                 self.new_value_error.pack()
             else:
-                self.new_value == asset_ip_address_var
+                self.new_value = asset_ip_address_var
         # Asset Status Validation
-        elif self.column_inp == "assetStatus":
+        elif self.column_inp.get() == "assetStatus":
             if self.status_input.get() == status_options[0]: # Ensures default value can't be submitted
                 self.new_value_error = tk.Label(self.window, text = "Please Select Asset Status", fg = "red")
                 self.new_value_error.pack()
         # Asset Renewal Date Validation
-        elif self.column_inp == "assetRenewalDate":
+        elif self.column_inp.get() == "assetRenewalDate":
             # Asset Renewal Date Validation
             self.renewal_date_error = tk.Label(self.window, text = "Error: Invalid Date")
             if self.renewal_month_inp.get() == "February":
-                if self.renewal_year_inp.get() % 4 != 0:
-                    if self.renewal_day_inp.get() <= '29':
+                if int(self.renewal_year_inp.get()) % 4 != 0:
+                    if int(self.renewal_day_inp.get()) <= 29:
                         self.renewal_date_error.pack()
                 else:
-                    if self.renewal_day_inp.get() <= '30':
+                    if int(self.renewal_day_inp.get()) <= 30:
                         self.renewal_date_error.pack()
             elif self.renewal_month_inp.get() in ['April', 'June', 'September', 'November']:
-                if self.renewal_day_inp.get() == '31':
+                if int(self.renewal_day_inp.get()) == 31:
                         self.renewal_date_error.pack()
             self.new_value = asset_renewal_date
 
@@ -220,7 +220,7 @@ class DatabaseGUI:
         connect = sqlite3.connect(db_file)
         cursor = connect.cursor()
         table_name = type_of_asset_conversion[self.database_type]
-        cursor.execute(f"SELECT * FROM {table_name} WHERE {self.filter_field} = '{self.expanded_filter}")
+        cursor.execute(f"SELECT * FROM {table_name} WHERE {self.filter_field} = '{self.expanded_filter}'")
         rows = cursor.fetchall()
         for row in rows:
             self.table.insert('', 'end', values=row)
