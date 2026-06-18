@@ -150,15 +150,15 @@ class DeleteUpdateGUI:
         elif self.column_inp == "assetRenewalDate":
             # Asset Renewal Date Validation
             self.renewal_date_error = tk.Label(self.window, text = "Error: Invalid Date")
-            if self.renewal_month_inp == "February":
-                if self.renewal_year_inp % 4 != 0:
-                    if self.renewal_day_inp <= '29':
+            if self.renewal_month_inp.get() == "February":
+                if self.renewal_year_inp.get() % 4 != 0:
+                    if self.renewal_day_inp.get() <= '29':
                         self.renewal_date_error.pack()
                 else:
-                    if self.renewal_day_inp <= '30':
+                    if self.renewal_day_inp.get() <= '30':
                         self.renewal_date_error.pack()
-            elif self.renewal_month_inp in ['April', 'June', 'September', 'November']:
-                if self.renewal_day_inp == '31':
+            elif self.renewal_month_inp.get() in ['April', 'June', 'September', 'November']:
+                if self.renewal_day_inp.get() == '31':
                         self.renewal_date_error.pack()
             self.new_value = asset_renewal_date
 
@@ -304,4 +304,4 @@ class ViewDataBaseGUI:
             self.subfilter_inp.pack()
         self.subfilter_inp.set("--Please select a filter--")
 
-        tk.Button(self.window, text="View Database", command = self.view_filtered_db)
+        tk.Button(self.window, text="View Database", command = self.view_filtered_db).pack()
