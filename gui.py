@@ -119,26 +119,33 @@ class DeleteUpdateGUI:
     def updating_record(self):
         self.prevent_error_stacking()
         # Combines the inputted values for IP address into a formatted string
-        asset_ip_address_var1 = self.ip_address_inp1.get().strip() if self.db_name == "Hardware" else "N/A"
-        asset_ip_address_var2 = self.ip_address_inp2.get().strip() if self.db_name == "Hardware" else "N/A"
-        asset_ip_address_var3 = self.ip_address_inp3.get().strip() if self.db_name == "Hardware" else "N/A"
-        asset_ip_address_var4 = self.ip_address_inp4.get().strip() if self.db_name == "Hardware" else "N/A"
-        asset_ip_address_var = f'{asset_ip_address_var1}.{asset_ip_address_var2}.{asset_ip_address_var3}.{asset_ip_address_var4}'
+        if self.column_inp.get() == "ipAddress":
+            asset_ip_address_var1 = self.ip_address_inp1.get().strip()
+            asset_ip_address_var2 = self.ip_address_inp2.get().strip()
+            asset_ip_address_var3 = self.ip_address_inp3.get().strip()
+            asset_ip_address_var4 = self.ip_address_inp4.get().strip()
+            asset_ip_address_var = f'{asset_ip_address_var1}.{asset_ip_address_var2}.{asset_ip_address_var3}.{asset_ip_address_var4}'
+        else:
+            asset_ip_address_var = "N/A"
         asset_renewal_date = f"{self.renewal_day_inp.get()}/{self.renewal_month_inp.get()}/{self.renewal_year_inp.get()}"
         # Asset IP Address Validation (Hardware Assets Only)
         if self.column_inp.get() == "ipAddress":
             if asset_ip_address_var == "": # Presence Check
                 self.new_value_error = tk.Label(self.window, text = "Please Enter Asset IP Address", fg = "red")
                 self.new_value_error.pack()
+                return
             elif len(asset_ip_address_var) < 11: # Length Check
                 self.new_value_error = tk.Label(self.window, text = "IP Address must be 8 digits minumum", fg = "red")
                 self.new_value_error.pack()
+                return
             elif len(asset_ip_address_var) > 16: # Length Check
                 self.new_value_error = tk.Label(self.window, text = "IP Address must be 12 digits maximum", fg = "red")
                 self.new_value_error.pack()
+                return
             elif not asset_ip_address_var1.isdigit() or not asset_ip_address_var2.isdigit() or not asset_ip_address_var3.isdigit() or not asset_ip_address_var4.isdigit():
                 self.new_value_error =  tk.Label(self.window, text = "IP Address can only be digits", fg = "red")
                 self.new_value_error.pack()
+                return
             else:
                 self.new_value = asset_ip_address_var
         # Asset Status Validation
@@ -146,20 +153,26 @@ class DeleteUpdateGUI:
             if self.status_input.get() == status_options[0]: # Ensures default value can't be submitted
                 self.new_value_error = tk.Label(self.window, text = "Please Select Asset Status", fg = "red")
                 self.new_value_error.pack()
+                return
+            else:
+                self.new_value = self.status_input.get()
         # Asset Renewal Date Validation
         elif self.column_inp.get() == "assetRenewalDate":
             # Asset Renewal Date Validation
-            self.renewal_date_error = tk.Label(self.window, text = "Error: Invalid Date")
+            self.renewal_date_error = tk.Label(self.window, text = "Error: Invalid Date", fg = "red")
             if self.renewal_month_inp.get() == "February":
                 if int(self.renewal_year_inp.get()) % 4 != 0:
                     if int(self.renewal_day_inp.get()) <= 29:
                         self.renewal_date_error.pack()
+                        return
                 else:
                     if int(self.renewal_day_inp.get()) <= 30:
                         self.renewal_date_error.pack()
+                        return
             elif self.renewal_month_inp.get() in ['April', 'June', 'September', 'November']:
                 if int(self.renewal_day_inp.get()) == 31:
                         self.renewal_date_error.pack()
+                        return
             self.new_value = asset_renewal_date
 
         if self.column_inp.get() == columns_hardware[0]:
