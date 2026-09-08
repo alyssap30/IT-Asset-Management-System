@@ -2,7 +2,7 @@
 import tkinter as tk
 from tkinter import ttk
 from database import accessing_sql_db
-from gui import ViewDataBaseGUI, DeleteUpdateGUI
+from gui import DatabaseGUI, DeleteUpdateGUI
 from adding_records_gui import AssetAddingGUI
 from config import types_of_assets, hardware_asset_names, software_asset_names, furniture_asset_names
 
@@ -33,7 +33,10 @@ class MainGUI:
         tk.Button(self.root, text = "Add an Asset", command=self.asset_adding, padx= 80, pady=2).pack(pady=5)
         # Viewing Asset Database
         tk.Label(self.root, text = "View Asset Inventory", bg = "#6DA9C9", fg = "white", width= 100, font = ("Arial", 17)).pack(pady = 3)
-        tk.Label(self.root, text = "View Database", font= ("Arial", 15), justify="center").pack()
+        tk.Label(self.root, text = "Database Name:").pack()
+        self.type_of_asset_inp3 = ttk.Combobox(self.root, values = types_of_assets, width= 25, state= 'readonly')
+        self.type_of_asset_inp3.set(types_of_assets[0])
+        self.type_of_asset_inp3.pack()
         tk.Button(self.root, text = "View", command=self.view_asset_database, padx= 100, pady=2).pack(pady=5)
 
         # Users Can delete or update a record
@@ -94,7 +97,7 @@ class MainGUI:
     # Opens Database Window
     def view_asset_database(self):
         view_database_window = tk.Toplevel(self.root)
-        ViewDataBaseGUI(view_database_window)
+        DatabaseGUI(view_database_window, self.type_of_asset_inp3.get())
         
 # Main global Function to run the GUI
 if __name__ == "__main__":

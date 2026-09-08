@@ -1,6 +1,7 @@
 # database.py imports 
 import sqlite3
 from config import db_file, sql_file  # Import variables from config
+from tkinter import messagebox
 
 def accessing_sql_db():
     connect = sqlite3.connect(db_file)
@@ -16,6 +17,8 @@ def accessing_sql_db():
         cursor.execute("CREATE TABLE IF NOT EXISTS software_assets (assetName TEXT, assetType TEXT, assetStatus TEXT)")
         cursor.execute("CREATE TABLE IF NOT EXISTS furniture_assets (assetName TEXT, assetType TEXT, assetStatus TEXT)")
         connect.commit()
+    except sqlite3.IntegrityError:
+        messagebox.showerror("Duplicate Asset", "The asset name must be unique")
     finally:
         connect.close()
 

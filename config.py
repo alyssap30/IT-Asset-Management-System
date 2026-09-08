@@ -4,8 +4,9 @@ import os
 # Comboboxes Values
 types_of_assets = ["--Please Select A Type of Asset--", "Hardware", "Software", "Office Furniture"]
 status_options = ["--Please Select A Status--", "Active", "Under Maintence", "Temporary Deactivated", "Inactive"]
-database_filters = ["--Please Select A Filter--", "Status", "Type"]
-month_options = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+database_filters = ["--Please Select a Filter--", "assetStatus"]
+month_options = {"January": 1, "February": 2, "March": 3, "April" : 4, "May": 5, "June": 6, "July": 7, "August": 8, 
+                 "September": 9, "October": 10, "November": 11, "December": 12}
 columns_hardware = ['--Please select a column name--', 'ipAddress', 'assetStatus', 'assetRenewalDate']
 columns_software_and_furniture = ['--Please select a column name--', 'assetStatus', 'assetRenewalDate']
 
@@ -19,5 +20,3 @@ type_of_asset_conversion = {"Hardware": "hardware_assets", "Software": "software
 hardware_asset_names = ['--Please Select a Row Name--', 'Server0']
 software_asset_names = ['--Please Select a Row Name--', 'VS Code']
 furniture_asset_names = ['--Please Select a Row Name--']
-
-

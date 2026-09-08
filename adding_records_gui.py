@@ -10,6 +10,7 @@ class AssetAddingGUI:
     def __init__(self, window, asset_type):
         self.window = window
         self.asset_type = asset_type
+        self.added_renewal = True
         self.window.title("Adding a New Asset")
         self.window.geometry("400x540")
         self.window.resizable(False, False)
@@ -56,7 +57,8 @@ class AssetAddingGUI:
             self.renewal_day_inp.pack(side = tk.LEFT, padx = 5)
             # Month Selection Field
             tk.Label(self.date_frame, text = "/").pack(side= tk.LEFT, padx=5)
-            self.renewal_month_inp = ttk.Combobox(self.date_frame, width= 9, values = month_options, state='readonly')
+            self.renewal_month_inp = ttk.Combobox(self.date_frame, width= 9, values = month_options.keys(), state='readonly')
+            self.renewal_month_inp.set(list(month_options.keys())[0])
             self.renewal_month_inp.pack(side = tk.LEFT, padx = 5)
             # Year Selection Field
             tk.Label(self.date_frame, text = "/").pack(side= tk.LEFT, padx=5)
@@ -75,8 +77,10 @@ class AssetAddingGUI:
     def toggle_date_field(self):
         if self.add_renewal_date.get():
             self.date_frame.pack()
+            self.added_renewal = True
         else:
             self.date_frame.pack_forget()
+            self.added_renewal = False
 
     # Validates user input and appends it to the database if the rules are met
     def add_to_database(self):
@@ -93,7 +97,11 @@ class AssetAddingGUI:
         asset_ip_address_var = f'{asset_ip_address_var1}.{asset_ip_address_var2}.{asset_ip_address_var3}.{asset_ip_address_var4}'
         ip_address_valid = True if self.asset_type != "Hardware" else False
         # Combines the inputted values for Renewal Date into a formatted string
-        self.asset_renewal_date = f"{self.renewal_day_inp.get()}/{self.renewal_month_inp.get()}/{self.renewal_year_inp.get()}"
+        if self.added_renewal:
+            self.month_var = self.renewal_month_inp.get()
+            self.asset_renewal_date = f"{self.renewal_day_inp.get()}/{month_options[self.month_var]}/{self.renewal_year_inp.get()}"
+        else:
+            self.asset_renewal_date = "Not set"
         
         if hasattr(self, 'name_error'):
             self.name_error.destroy()
@@ -103,6 +111,8 @@ class AssetAddingGUI:
             self.ip_address_error.destroy()
         if hasattr(self, 'status_error'):
             self.status_error.destroy()
+        if hasattr(self, 'renewal_date_error'):
+            self.renewal_date_error.destroy()
 
         # Asset Name Validation
         if asset_name_var.strip() == "": # Presence Check
@@ -127,7 +137,7 @@ class AssetAddingGUI:
             if asset_ip_address_var == "": # Presence Check
                 self.ip_address_error = tk.Label(self.window, text = "Please Enter Asset IP Address", fg = "red")
                 self.ip_address_error.pack()
-            elif len(asset_ip_address_var) < 11:
+            elif len(asset_ip_address_var) < 8:
                 self.ip_address_error = tk.Label(self.window, text = "IP Address must be 8 digits minumum", fg = "red")
                 self.ip_address_error.pack()
             elif len(asset_ip_address_var) > 16:
@@ -146,16 +156,16 @@ class AssetAddingGUI:
             status_valid = True
         # Asset Renewal Date Validation
         self.renewal_date_error = tk.Label(self.window, text = "Error: Invalid Date", fg = "red")
-        if self.renewal_month_inp.get() == "February":
+        if month_options[self.renewal_month_inp.get()] == 2:
             if int(self.renewal_year_inp.get()) % 4 != 0:
                 if int(self.renewal_day_inp.get()) > 28:
                     self.renewal_date_error.pack()
             else:
                 if int(self.renewal_day_inp.get()) > 29:
                     self.renewal_date_error.pack()
-        elif self.renewal_month_inp.get() in ['April', 'June', 'September', 'November']:
+        elif month_options[self.renewal_month_inp.get()] in [4, 6, 9, 11]:
             if int(self.renewal_day_inp.get()) > 30:
-                    self.renewal_date_error.pack()
+                self.renewal_date_error.pack()
         
         # Defining Adding to DB function
         def append_to_db(tablename):
@@ -183,4 +193,3 @@ class AssetAddingGUI:
             else:
                 append_to_db("furniture_assets")
                 furniture_asset_names.append(self.asset_name_inp.get())
-        
